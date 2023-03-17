@@ -256,7 +256,7 @@ namespace Roommates.Repositories
             }
         }
 
-        public void Reassign(int unassignRoommateId, int assignRoommateId)
+        public void Reassign(int unassignRoommateId, int assignRoommateId, int choreId)
         {
             using (SqlConnection conn = Connection)
             {
@@ -265,10 +265,12 @@ namespace Roommates.Repositories
                 {
                     cmd.CommandText = @"
                                         UPDATE RoommateChore
-	                                        SET RoommateChore.ChoreId = @assignRoommateId
-                                        WHERE RoommateChore.RoommateId = @unassignRoommateId";
+	                                        SET RoommateChore.RoommateId = @assignRoommateId
+                                        WHERE RoommateChore.RoommateId = @unassignRoommateId
+                                            AND RoommateChore.ChoreId = @choreId";
                     cmd.Parameters.AddWithValue("@assignRoommateId", assignRoommateId);
                     cmd.Parameters.AddWithValue("@unassignRoommateId", unassignRoommateId);
+                    cmd.Parameters.AddWithValue("@choreId", choreId);
 
                     cmd.ExecuteNonQuery();
                 }

@@ -198,7 +198,7 @@ namespace Roommates
                             Console.WriteLine($"{rm.Id}. {rm.FirstName} {rm.LastName}");
                         }
                         assignChoice = int.Parse(Console.ReadLine());
-                        choreRepo.Reassign(unassignChoice, assignChoice);
+                        choreRepo.Reassign(unassignChoice, assignChoice, reassignChoreChoice);
                         Console.WriteLine("Chore has been successfully reassigned!");
                         Console.Write("Press any Key to continue:");
                         Console.ReadKey();
