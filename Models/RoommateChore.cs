@@ -9,7 +9,7 @@ namespace Roommates.Models
 {
     public class RoommateChore
     {
-        public int RoommateId { get; set; }
-        public int ChoreId { get; set; }
+        public Chore Chore { get; set; }
+        public Roommate Roommate { get; set; }
     }
 }

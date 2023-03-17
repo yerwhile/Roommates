@@ -49,6 +49,56 @@ namespace Roommates.Repositories
             }
         }
 
+        public List<Roommate> GetAllExcept(int roommateId)
+        {
+            List<Roommate> allRoommates = new List<Roommate>();
+            allRoommates = GetAll();
+            List<Roommate> allExcept = new List<Roommate>();
+            foreach(var rm in allRoommates)
+            {
+                if(rm.Id != roommateId)
+                {
+                    allExcept.Add(rm);
+                }
+            }
+            return allExcept;
+        }
+
+        public List<Roommate> GetByChore(int choreId)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT rm.id, rm.FirstName, rm.LastName
+                                            FROM Roommate rm
+                                               JOIN RoommateChore rmc
+                                                    ON rm.Id = rmc.RoommateId
+                                         WHERE rmc.ChoreId = @choreId";
+                    cmd.Parameters.AddWithValue("@choreId", choreId);
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        List<Roommate> roommates = new List<Roommate>();
+
+                        while(reader.Read())
+                        {
+                            Roommate roommate = new Roommate()
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                LastName = reader.GetString(reader.GetOrdinal("LastName"))
+                            };
+                            roommates.Add(roommate);
+                            
+                        }
+                        return roommates;
+                    }
+                }
+            }
+        }
+
         public List<Roommate> GetAll()
         {
             using (SqlConnection conn = Connection)

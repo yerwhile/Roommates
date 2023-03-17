@@ -2,7 +2,9 @@
 using Roommates.Repositories;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Roommates
 {
@@ -161,6 +163,46 @@ namespace Roommates
                         Console.Write("Press any key to continue");
                         Console.ReadKey();
                         break;
+                    case ("Reassign chore"):
+                        List<Chore> assignedChores = new List<Chore>();
+                        assignedChores = choreRepo.GetAssignedChores();
+                        Console.WriteLine("Choose an assigned chore by Id to re-assign:");
+                        foreach(var assignedChore in assignedChores)
+                        {
+                            Console.WriteLine($"{assignedChore.Id}. {assignedChore.Name}");
+                        }
+                        int reassignChoreChoice = int.Parse(Console.ReadLine());
+                        List<Roommate> assignedRoommates = new List<Roommate>();
+                        assignedRoommates = roommateRepo.GetByChore(reassignChoreChoice);
+                        int unassignChoice = 0;
+                        if(assignedRoommates.Count == 1)
+                        {
+                            Console.WriteLine($"This chore is currently assigned to {assignedRoommates[0].FirstName} {assignedRoommates[0].LastName}. Who would you like to assign it to?");
+                            unassignChoice = assignedRoommates[0].Id;
+                        }
+                        else
+                        {
+                            Console.WriteLine($"This chore is currently assigned to {assignedRoommates.Count} Roommates. Choose a Roommate by Id whom you'd like to unassign from this chore:");
+                            foreach(var rm in assignedRoommates)
+                            {
+                                Console.WriteLine($"{rm.Id}. {rm.FirstName} {rm.LastName}");
+                            }
+                            unassignChoice = int.Parse(Console.ReadLine());
+                            Console.WriteLine("Now choose who would you like to assign this chore to");
+                        }
+                        int assignChoice = 0;
+                        List<Roommate> availableRoommates = new List<Roommate>();
+                        availableRoommates = roommateRepo.GetAllExcept(unassignChoice);
+                        foreach(var rm in availableRoommates)
+                        {
+                            Console.WriteLine($"{rm.Id}. {rm.FirstName} {rm.LastName}");
+                        }
+                        assignChoice = int.Parse(Console.ReadLine());
+                        choreRepo.Reassign(unassignChoice, assignChoice);
+                        Console.WriteLine("Chore has been successfully reassigned!");
+                        Console.Write("Press any Key to continue:");
+                        Console.ReadKey();
+                        break;
                     case ("Delete a chore"):
                         List<Chore> deleteChores = choreRepo.GetAll();
                         foreach (Chore c in deleteChores)
@@ -254,6 +296,7 @@ namespace Roommates
                 "Search for chore",
                 "Add a chore",
                 "Update a chore",
+                "Reassign chore",
                 "Delete a chore",
                 "Search for roommate",
                 "See unassigned chores",

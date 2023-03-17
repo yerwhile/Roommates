@@ -52,16 +52,16 @@ namespace Roommates.Repositories
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
-                using(SqlCommand cmd = conn.CreateCommand())
+                using (SqlCommand cmd = conn.CreateCommand())
                 {
                     cmd.CommandText = "SELECT Name FROM Chore WHERE Id = @id";
                     cmd.Parameters.AddWithValue("@id", id);
 
-                    using(SqlDataReader reader = cmd.ExecuteReader())
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         Chore chore = null;
 
-                        if(reader.Read())
+                        if (reader.Read())
                         {
                             chore = new Chore
                             {
@@ -80,7 +80,7 @@ namespace Roommates.Repositories
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
-                using(SqlCommand cmd = conn.CreateCommand())
+                using (SqlCommand cmd = conn.CreateCommand())
                 {
                     cmd.CommandText = @"INSERT INTO Chore (Name)
                                         OUTPUT INSERTED.Id
@@ -99,17 +99,17 @@ namespace Roommates.Repositories
             {
                 conn.Open();
 
-                using(SqlCommand cmd = conn.CreateCommand())
+                using (SqlCommand cmd = conn.CreateCommand())
                 {
                     cmd.CommandText = @"SELECT c.Id, c.Name FROM Chore c
 	                                        LEFT JOIN RoommateChore rc
 		                                        ON rc.ChoreId = c.Id
                                         WHERE rc.RoommateId IS NULL";
-                    using(SqlDataReader reader = cmd.ExecuteReader())
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         List<Chore> chores = new List<Chore>();
 
-                        while(reader.Read())
+                        while (reader.Read())
                         {
 
                             Chore chore = new Chore()
@@ -139,7 +139,7 @@ namespace Roommates.Repositories
                     cmd.Parameters.AddWithValue("@roommateId", roommateId);
                     cmd.Parameters.AddWithValue("@choreId", choreId);
                     cmd.ExecuteNonQuery();
-            
+
                 }
             }
         }
@@ -157,11 +157,11 @@ namespace Roommates.Repositories
                                         GROUP BY rm.FirstName, rmc.RoommateId
                                         ORDER BY NumChores";
 
-                    using(SqlDataReader reader = cmd.ExecuteReader())
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         List<ChoreCount> choreCounts = new List<ChoreCount>();
 
-                        while(reader.Read())
+                        while (reader.Read())
                         {
                             Roommate roommate = new Roommate()
                             {
@@ -213,11 +213,67 @@ namespace Roommates.Repositories
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
                     // What do you think this code will do if there is a roommate in the room we're deleting???
-                    cmd.CommandText = "DELETE FROM Chore WHERE Id = @id";
+                    cmd.CommandText = @"DELETE FROM RoommateChore rc
+                                            WHERE ChoreId = @id
+                                        DELETE FROM Chore
+                                            Where Id = @id";
                     cmd.Parameters.AddWithValue("@id", id);
                     cmd.ExecuteNonQuery();
                 }
             }
         }
+
+        public List<Chore> GetAssignedChores()
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT DISTINCT c.Id, c.Name FROM Chore c
+	                                        LEFT JOIN RoommateChore rc
+		                                        ON rc.ChoreId = c.Id
+                                        WHERE rc.RoommateId IS NOT NULL";
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        List<Chore> chores = new List<Chore>();
+
+                        while (reader.Read())
+                        {
+
+                            Chore chore = new Chore()
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                Name = reader.GetString(reader.GetOrdinal("Name"))
+                            };
+
+                            chores.Add(chore);
+                        }
+                        return chores;
+                    }
+                }
+            }
+        }
+
+        public void Reassign(int unassignRoommateId, int assignRoommateId)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using(SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"
+                                        UPDATE RoommateChore
+	                                        SET RoommateChore.ChoreId = @assignRoommateId
+                                        WHERE RoommateChore.RoommateId = @unassignRoommateId";
+                    cmd.Parameters.AddWithValue("@assignRoommateId", assignRoommateId);
+                    cmd.Parameters.AddWithValue("@unassignRoommateId", unassignRoommateId);
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
     }
 }
