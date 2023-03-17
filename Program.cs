@@ -182,7 +182,7 @@ namespace Roommates
                         }
                         else
                         {
-                            Console.WriteLine($"This chore is currently assigned to {assignedRoommates.Count} Roommates. Choose a Roommate by Id whom you'd like to unassign from this chore:");
+                            Console.WriteLine($"This chore is currently assigned to {assignedRoommates.Count} Roommates. Choose a Roommate by Id whom you'd like to replace:");
                             foreach(var rm in assignedRoommates)
                             {
                                 Console.WriteLine($"{rm.Id}. {rm.FirstName} {rm.LastName}");
